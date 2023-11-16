@@ -30,11 +30,13 @@ public class Sorter {
 
             String line;
             Product product = null;
-            boolean stop = false;
 
-            while (!stop) {
-                line = br.readLine();
+            while ((line = br.readLine()) != null) {
                 System.out.println(line);
+                sleep(br);
+                if(!br.ready()) {
+                    break;
+                }
                 String[] terms = line.trim().toLowerCase().split(":");
                 switch (terms[0]) {
                     case "request_id":
@@ -66,17 +68,17 @@ public class Sorter {
                     case "prod_end":
                         continue;
                     default:
-                        stop = true;
                 }
             }
 
             products.sort(Comparator.comparing(Product::getRating).thenComparing(Product::getPrice));
-            products.forEach(System.out::println);
+            // products.forEach(System.out::println);
 
+            double runningBudget = getBudget();
             for (Product p : products) {
-                if (getBudget() - p.getPrice() > 0) {
+                if (runningBudget - p.getPrice() > 0) {
                     chosenProducts.add(p);
-                    setBudget(getBudget() - p.getPrice());
+                    runningBudget -= p.getPrice();
                 } else {
                     continue;
                 }
@@ -89,14 +91,16 @@ public class Sorter {
             bw.write("name: Tan Wei Sheng\n");
             bw.write("email: wstan.ws97@gmail.com\n");
             for (Product p : chosenProducts) {
-                ids = ids + " " + p.getId();
+                ids = ids + ", " + p.getId();
             }
+            ids = ids.substring(2);
             bw.write("items: " + ids.trim() + "\n");
             for (Product p : chosenProducts) {
                 totalPrice += p.getPrice();
             }
             bw.write("spent: " + totalPrice + "\n");
-            bw.write("remaining: " + (getBudget() - totalPrice) + "\n");
+            double remaining = getBudget() - totalPrice;
+            bw.write("remaining: " + remaining + "\n");
             bw.write("client_end\n");
 
             bw.flush();
@@ -125,5 +129,14 @@ public class Sorter {
 
     private void saveProduct(Product product) {
         products.add(product);
+    }
+
+    private static void sleep(BufferedReader br) throws Exception {
+        long time = System.currentTimeMillis();
+        while(System.currentTimeMillis() - time < 1000) {
+            if(br.ready()) {
+                break;
+            }
+        }
     }
 }
