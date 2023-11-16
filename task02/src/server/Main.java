@@ -29,7 +29,12 @@ public class Main {
 
         Sorter sorter = new Sorter();
         sorter.read(socket);
-        sorter.sort();  
+        sorter.sort();
+        sorter.pick();  
         sorter.write(socket);
+        sorter.readResult(socket);
+        
+        socket.close();
+
     }    
 }

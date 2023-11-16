@@ -16,6 +16,20 @@ public class Sorter {
     private double budget;
     private String requestID;
     private List<Product> products = new ArrayList<>();
+    private List<Product> chosenProducts = new ArrayList<>();
+
+    public void readResult(Socket socket) throws Exception {
+        try (InputStream is = socket.getInputStream()) {
+            InputStreamReader isr = new InputStreamReader(is);
+            BufferedReader br = new BufferedReader(isr);
+
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                System.out.println(line);
+            }
+        }   
+    }
 
     public void read(Socket socket) throws Exception {
 
@@ -72,13 +86,39 @@ public class Sorter {
         products.forEach(System.out::println);
     }
 
+    public void pick() {
+        for (Product product : products) {
+            if (getBudget() - product.getPrice() > 0) {
+                chosenProducts.add(product);
+                setBudget(getBudget() - product.getPrice());
+            } else {
+                continue;
+            }
+        }
+    }
+
     public void write(Socket socket) throws Exception {
         
         try(OutputStream os = socket.getOutputStream()) {
             OutputStreamWriter osw = new OutputStreamWriter(os);
             BufferedWriter bw = new BufferedWriter(osw);
+            String ids = "";
+            double totalPrice = 0;
 
-            bw.write("\n");
+            bw.write("request_id:" + getRequestID() + "\n");
+            bw.write("name: Tan Wei Sheng\n");
+            bw.write("email: wstan.ws97@gmail.com\n");
+            for (Product product : chosenProducts) {
+                ids = ids + " " + product.getId();
+            }
+            bw.write("items: " + ids.trim() + "\n");
+            for (Product product : chosenProducts) {
+                totalPrice += product.getPrice();
+            }
+            bw.write("spent: " + totalPrice + "\n");
+            bw.write("remaining: " + (getBudget() - totalPrice) + "\n");
+            bw.write("client_end\n");
+
             bw.flush();
         }
     }
