@@ -28,12 +28,8 @@ public class Main {
         System.out.printf("Connected! Listening on port %d\n", port);
 
         Sorter sorter = new Sorter();
-        sorter.read(socket);
-        sorter.sort();
-        sorter.pick();  
-        sorter.write(socket);
-        sorter.readResult(socket);
-        
+        sorter.sort(socket);
+
         socket.close();
 
     }    
